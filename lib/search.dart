@@ -10,14 +10,14 @@ class HomePage extends StatefulWidget {
   final VoidCallback onToggleTheme;
   final Function(int, {int? itemId}) setLastActivity;
   final GlobalKey<NavigatorState> navigatorKey;
-  final VoidCallback onSearchTapped; // The only necessary addition
+  final VoidCallback onSearchTapped;
 
   const HomePage({
     Key? key,
     required this.onToggleTheme,
     required this.setLastActivity,
     required this.navigatorKey,
-    required this.onSearchTapped, // Required
+    required this.onSearchTapped,
   }) : super(key: key);
 
   @override
@@ -147,6 +147,7 @@ class _HomePageState extends State<HomePage> {
         style: TextStyle(
           fontSize: (screenSize.width * 0.04).clamp(16.0, 20.0),
           fontWeight: FontWeight.bold,
+          // Use the correct theme color for text on the background
           color: theme.colorScheme.onBackground,
         ),
       ),
@@ -292,6 +293,7 @@ class _HomePageState extends State<HomePage> {
       style: TextStyle(
         fontStyle: FontStyle.italic,
         fontSize: (screenSize.width * 0.035).clamp(12.0, 15.0),
+        // Use the correct theme color for text on the background
         color: theme.colorScheme.onBackground.withOpacity(0.8),
       ),
     );

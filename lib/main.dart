@@ -3,7 +3,7 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:amidehayimanot_zimare/add.dart';
-import 'package:amidehayimanot_zimare/search.dart';
+import 'search.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -16,10 +16,11 @@ import 'package:amidehayimanot_zimare/mezmur_poem.dart';
 import 'package:amidehayimanot_zimare/category_data.dart';
 import 'package:amidehayimanot_zimare/aboutus.dart';
 
-// --- Theme colors ---
+// --- DEFINED BRANDING COLORS ---
 const Color kBrandedPrimary = Color(0xFF013b6d);
 const Color kBrandedAccent = Color(0xFFf5b916);
-const Color kBrandedCard =    Color(0xFF024b8f);
+const Color kBrandedCardLight = Color(0xFF024b8f); 
+const Color kBrandedBackgroundLight = Color(0xFFE1E8ED);
 
 const Color kDarkPrimary = Color(0xFF121212);
 const Color kDarkAccent = Color(0xFFF3BD46);
@@ -208,15 +209,15 @@ class MyAppState extends State<MyApp> {
       theme: ThemeData(
         brightness: Brightness.light,
         primaryColor: kBrandedPrimary,
-        scaffoldBackgroundColor: kBrandedPrimary,
+        scaffoldBackgroundColor: kBrandedPrimary, // Main background is blue
         fontFamily: 'NotoSansEthiopic',
         colorScheme: const ColorScheme.light(
           primary: kBrandedPrimary,
           secondary: kBrandedAccent,
           background: kBrandedPrimary,
-          onBackground: Colors.white,
-          surface: kBrandedCard,
-          onSurface: Colors.black87,
+          onBackground: Colors.white,         // Text on blue background is WHITE
+          surface: kBrandedCardLight,         // Card color is light blue
+          onSurface: Colors.white,        // Text on cards is BLACK
         ),
         appBarTheme: const AppBarTheme(
           backgroundColor: Color(0xFF024b8f),
@@ -229,8 +230,8 @@ class MyAppState extends State<MyApp> {
           selectedItemColor: kBrandedAccent,
           unselectedItemColor: Colors.white70,
         ),
-        cardColor: kBrandedCard,
-        textTheme: Typography.material2021().black.apply(fontFamily: 'NotoSansEthiopic'),
+        cardColor: kBrandedCardLight,
+        textTheme: Typography.material2021().white.apply(fontFamily: 'NotoSansEthiopic'), // Default text on cards
       ),
       darkTheme: ThemeData(
         brightness: Brightness.dark,
@@ -326,7 +327,7 @@ class MyAppState extends State<MyApp> {
       key: const ValueKey('searchField'),
       height: 40,
       decoration: BoxDecoration(
-        color: theme.scaffoldBackgroundColor.withOpacity(0.5),
+        color: theme.colorScheme.primary.withOpacity(0.1),
         borderRadius: BorderRadius.circular(20),
       ),
       child: TextField(
@@ -406,8 +407,8 @@ class MyAppState extends State<MyApp> {
         color: theme.cardColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: ListTile(
-          title: _highlightText(result['title'], query, theme.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.bold)),
-          subtitle: Text('Category: ${getCategoryTitle(result['categoryId'])}', style: theme.textTheme.bodyMedium),
+          title: _highlightText(result['title'], query, theme.textTheme.bodyLarge!.copyWith(color: theme.colorScheme.onSurface)),
+          subtitle: Text('Category: ${getCategoryTitle(result['categoryId'])}', style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurface.withOpacity(0.7))),
           onTap: () {
             FocusScope.of(context).unfocus();
             setState(() { _isSearchActive = false; _searchController.clear(); });
@@ -453,7 +454,6 @@ class MyAppState extends State<MyApp> {
     );
   }
 }
-
 class AnimatedSplashScreen extends StatefulWidget {
   const AnimatedSplashScreen({super.key});
   @override
