@@ -1,3 +1,5 @@
+// lib/app_drawer.dart
+
 import 'package:flutter/material.dart';
 import 'package:amidehayimanot_zimare/list.dart';
 import 'package:amidehayimanot_zimare/category_data.dart';
@@ -18,208 +20,153 @@ class AppDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
     final screenSize = MediaQuery.of(context).size;
-    final iconColor =
-        isDarkMode ? const Color(0xFFF3BD46) : const Color(0xFF6A1B9A);
-    final textColor = isDarkMode ? Colors.white : Colors.grey[800];
-    final backgroundColor =
-        isDarkMode ? const Color.fromARGB(255, 30, 15, 50) : Colors.white;
-    final accentColor =
-        isDarkMode ? const Color(0xFFF3BD46) : const Color(0xFF6A1B9A);
-
-    void _navigateTo(Widget screen) {
-      Navigator.of(context).pop();
-      navigatorKey.currentState?.push(
-        MaterialPageRoute(builder: (context) => screen),
-      );
-    }
 
     return Drawer(
-      backgroundColor: backgroundColor,
-      width: screenSize.width * 0.75,
+      child: Theme(
+        data: theme.copyWith(canvasColor: theme.scaffoldBackgroundColor),
+        child: Container(
+          color: theme.scaffoldBackgroundColor,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _buildDrawerHeader(context),
+              Expanded(
+                child: _buildCategoryList(context),
+              ),
+              _buildFooter(context),
+            ],
+          ),
+        ),
+      ),
+      width: screenSize.width * 0.8,
+    );
+  }
+
+  Widget _buildDrawerHeader(BuildContext context) {
+    final theme = Theme.of(context);
+    final screenSize = MediaQuery.of(context).size;
+    final isBrandedTheme = theme.brightness == Brightness.light;
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 50, 20, 20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: isBrandedTheme
+              ? [theme.colorScheme.primary, theme.appBarTheme.backgroundColor ?? theme.colorScheme.primary]
+              : [theme.cardColor, theme.appBarTheme.backgroundColor ?? theme.cardColor],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white.withOpacity(0.1),
+              border: Border.all(color: theme.colorScheme.secondary, width: 2.5),
+            ),
+            child: CircleAvatar(
+              radius: screenSize.width * 0.09,
+              backgroundColor: Colors.transparent,
+              backgroundImage: const AssetImage('assets/images/logo.jpeg'),
+            ),
+          ),
+          const SizedBox(height: 15),
+          Text(
+            'ዓምደ ሃይማኖት',
+            style: TextStyle(
+              color: isBrandedTheme ? Colors.white : theme.colorScheme.secondary,
+              fontSize: screenSize.width * 0.055,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Text(
+            'ሰንበት ትምህርት ቤት',
+            style: TextStyle(
+              color: isBrandedTheme ? Colors.white.withOpacity(0.8) : Colors.white.withOpacity(0.7),
+              fontSize: screenSize.width * 0.04,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCategoryList(BuildContext context) {
+    final theme = Theme.of(context);
+    final screenSize = MediaQuery.of(context).size;
+    final accentColor = theme.colorScheme.secondary;
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(8.0),
+      itemCount: topLevelCategories.length,
+      itemBuilder: (context, index) {
+        final categoryId = topLevelCategories[index];
+        final categoryName = getCategoryTitle(categoryId);
+        final isActive = lastActivityCategoryId == categoryId;
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+          child: ListTile(
+            leading: Icon(Icons.church_rounded, size: screenSize.width * 0.055),
+            title: Text(
+              categoryName,
+              style: TextStyle(fontSize: screenSize.width * 0.042, fontWeight: isActive ? FontWeight.bold : FontWeight.normal),
+            ),
+            selected: isActive,
+            selectedTileColor: accentColor.withOpacity(0.15),
+            selectedColor: accentColor,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            onTap: () {
+              setLastActivity(categoryId);
+              Navigator.of(context).pop();
+              Future.delayed(const Duration(milliseconds: 100), () {
+                navigatorKey.currentState?.push(MaterialPageRoute(builder: (context) => ListScreen(
+                  categoryId, onToggleTheme: onToggleTheme, setLastActivity: setLastActivity, navigatorKey: navigatorKey,
+                )));
+              });
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildFooter(BuildContext context) {
+    final theme = Theme.of(context);
+    final screenSize = MediaQuery.of(context).size;
+    final isBrandedTheme = theme.brightness == Brightness.light;
+    final accentColor = theme.colorScheme.secondary;
+
+    return SafeArea(
+      top: false,
       child: Column(
         children: [
-          SizedBox(
-            height: screenSize.height * 0.25,
-            child: Stack(
-              children: [
-                Positioned.fill(
-                  child: RotatedBox(
-                    quarterTurns: 0,
-                    child: Image.asset(
-                      'assets/images/am-8.jpg',
-                      fit: BoxFit.cover,
-                      filterQuality: FilterQuality.high,
-                      isAntiAlias: true,
-                      color: Colors.black54,
-                      colorBlendMode: BlendMode.darken,
-                    ),
-                  ),
-                ),
-                Positioned(
-                  bottom: 20,
-                  left: 20,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.4),
-                          shape: BoxShape.circle,
-                        ),
-                        child: CircleAvatar(
-                          radius: screenSize.width * 0.09,
-                          backgroundColor: Colors.transparent,
-                          child: ClipOval(
-                            child: Image.asset(
-                              'assets/images/am-11.jpg',
-                              fit: BoxFit.cover,
-                              width: screenSize.width * 0.18,
-                              height: screenSize.width * 0.18,
-                              filterQuality: FilterQuality.high,
-                              isAntiAlias: true,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        'የዝማሬ ማውጫ',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: screenSize.width * 0.065,
-                          fontWeight: FontWeight.bold,
-                          shadows: const [
-                            Shadow(blurRadius: 2, color: Colors.black)
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              itemCount: topLevelCategories.length,
-              itemBuilder: (context, index) {
-                final categoryId = topLevelCategories[index];
-                final categoryName = getCategoryTitle(categoryId);
-                final isActive = lastActivityCategoryId == categoryId;
-
-                return Container(
-                  margin: EdgeInsets.symmetric(
-                    horizontal: screenSize.width * 0.03,
-                    vertical: 5,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isActive
-                        ? accentColor.withOpacity(0.15)
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(12),
-                    border: isActive
-                        ? Border.all(
-                            color: accentColor.withOpacity(0.3),
-                            width: 1.5,
-                          )
-                        : null,
-                  ),
-                  child: ListTile(
-                    leading: Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        color: isActive
-                            ? accentColor.withOpacity(0.2)
-                            : accentColor.withOpacity(0.1),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        Icons.church_rounded,
-                        color:
-                            isActive ? accentColor : iconColor.withOpacity(0.8),
-                        size: screenSize.width * 0.055,
-                      ),
-                    ),
-                    title: Text(
-                      categoryName,
-                      style: TextStyle(
-                        color: isActive ? accentColor : textColor,
-                        fontSize: screenSize.width * 0.045,
-                        fontWeight:
-                            isActive ? FontWeight.bold : FontWeight.w500,
-                      ),
-                    ),
-                    onTap: () {
-                      setLastActivity(categoryId);
-                      _navigateTo(
-                        ListScreen(
-                          categoryId,
-                          onToggleTheme: onToggleTheme,
-                          setLastActivity: setLastActivity,
-                          navigatorKey: navigatorKey,
-                        ),
-                      );
-                    },
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-          Container(
-            padding: EdgeInsets.symmetric(
-              horizontal: screenSize.width * 0.05,
-              vertical: screenSize.height * 0.015,
-            ),
-            decoration: BoxDecoration(
-              color:
-                  isDarkMode ? Colors.black.withOpacity(0.3) : Colors.grey[100],
-              border: Border(
-                top: BorderSide(
-                  color: isDarkMode
-                      ? Colors.white.withOpacity(0.1)
-                      : Colors.grey.withOpacity(0.3),
-                  width: 1,
-                ),
+          const Divider(height: 1, indent: 16, endIndent: 16),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: ListTile(
+              leading: Icon(
+                isBrandedTheme ? Icons.mode_night_rounded : Icons.wb_sunny_rounded,
+                color: accentColor,
+                size: screenSize.width * 0.06,
               ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Icon(
-                      isDarkMode ? Icons.nightlight_round : Icons.wb_sunny,
-                      color: accentColor,
-                      size: screenSize.width * 0.06,
-                    ),
-                    SizedBox(width: screenSize.width * 0.03),
-                    Text(
-                      isDarkMode ? 'Dark Mode' : 'Light Mode',
-                      style: TextStyle(
-                        color: textColor,
-                        fontSize: screenSize.width * 0.045,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-                Transform.scale(
-                  scale: 1.2,
-                  child: Switch(
-                    value: isDarkMode,
-                    onChanged: (value) => onToggleTheme(),
-                    activeColor: accentColor,
-                    activeTrackColor: accentColor.withOpacity(0.3),
-                  ),
-                ),
-              ],
+              title: Text(
+                isBrandedTheme ? 'light Mode' : 'Dark Mode',
+                style: TextStyle(fontSize: screenSize.width * 0.042),
+              ),
+              trailing: Switch(
+                value: !isBrandedTheme, // Switch is "on" for dark mode
+                onChanged: (value) => onToggleTheme(),
+                activeColor: accentColor,
+                activeTrackColor: accentColor.withOpacity(0.3),
+              ),
+              onTap: onToggleTheme,
             ),
           ),
         ],

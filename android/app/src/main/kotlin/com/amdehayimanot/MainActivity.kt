@@ -1,4 +1,4 @@
-package com.example.amidehayimanot_zimare
+package com.amdehayimanot
 
 import io.flutter.embedding.android.FlutterActivity
 

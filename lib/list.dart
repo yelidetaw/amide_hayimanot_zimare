@@ -39,12 +39,10 @@ class _ListScreenState extends State<ListScreen> {
   void initState() {
     super.initState();
     _isSwipeable = topLevelCategories.contains(widget.categoryId);
-
     if (_isSwipeable) {
       _currentPageIndex = topLevelCategories.indexOf(widget.categoryId);
       _pageController = PageController(initialPage: _currentPageIndex);
     }
-
     if (widget.itemId != null) {
       _navigateToDetailDirectly();
     }
@@ -54,30 +52,19 @@ class _ListScreenState extends State<ListScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final hymns = hymnsDatabase[widget.categoryId] ?? {};
       final itemIdToNavigate = widget.itemId!;
-
       if (hymns.containsKey(itemIdToNavigate)) {
         final content = hymns[itemIdToNavigate]!;
-        final title = content.split('\n').firstWhere(
-              (line) => line.trim().isNotEmpty,
-              orElse: () => 'Hymn $itemIdToNavigate',
-            );
-
+        final title = content.split('\n').firstWhere((line) => line.trim().isNotEmpty, orElse: () => 'Hymn $itemIdToNavigate');
         widget.navigatorKey.currentState?.pushReplacement(
           MaterialPageRoute(
             builder: (context) => DetailPage(
-              title: title,
-              id: widget.categoryId,
-              itemId: itemIdToNavigate,
-              onToggleTheme: widget.onToggleTheme,
-              setLastActivity: widget.setLastActivity,
-              navigatorKey: widget.navigatorKey,
+              title: title, id: widget.categoryId, itemId: itemIdToNavigate,
+              onToggleTheme: widget.onToggleTheme, setLastActivity: widget.setLastActivity, navigatorKey: widget.navigatorKey,
             ),
           ),
         );
       } else {
-        print(
-          "Error: itemId $itemIdToNavigate not found in category ${widget.categoryId}",
-        );
+        print("Error: itemId $itemIdToNavigate not found in category ${widget.categoryId}");
       }
     });
   }
@@ -97,16 +84,9 @@ class _ListScreenState extends State<ListScreen> {
       if (query.isNotEmpty) {
         hymnsDatabase.forEach((categoryId, hymns) {
           hymns.forEach((itemId, content) {
-            final title = content
-                .split('\n')
-                .firstWhere((line) => line.trim().isNotEmpty, orElse: () => '');
-            if (title.toLowerCase().contains(query.toLowerCase()) ||
-                content.toLowerCase().contains(query.toLowerCase())) {
-              _searchResults.add({
-                'categoryId': categoryId,
-                'itemId': itemId,
-                'title': title,
-              });
+            final title = content.split('\n').firstWhere((line) => line.trim().isNotEmpty, orElse: () => '');
+            if (title.toLowerCase().contains(query.toLowerCase()) || content.toLowerCase().contains(query.toLowerCase())) {
+              _searchResults.add({'categoryId': categoryId, 'itemId': itemId, 'title': title});
             }
           });
         });
@@ -116,31 +96,15 @@ class _ListScreenState extends State<ListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final Color accentColor =
-        isDarkMode ? const Color(0xFFF3BD46) : const Color(0xFF6A1B9A);
-    final Color appBarColor1 = isDarkMode
-        ? const Color.fromARGB(255, 45, 25, 70)
-        : const Color(0xFF6A1B9A);
-    final Color appBarColor2 = isDarkMode
-        ? const Color.fromARGB(255, 56, 30, 88)
-        : const Color(0xFF8E24AA);
-    final Color backgroundColor =
-        isDarkMode ? const Color(0xFF121212) : const Color(0xFFF5F5F5);
-
-    final int currentCategoryId = _isSwipeable
-        ? topLevelCategories[_currentPageIndex]
-        : widget.categoryId;
+    final theme = Theme.of(context);
+    final int currentCategoryId = _isSwipeable ? topLevelCategories[_currentPageIndex] : widget.categoryId;
 
     return Scaffold(
-      backgroundColor: backgroundColor,
-      appBar: _buildAppBar(
-          context, accentColor, appBarColor1, appBarColor2, currentCategoryId),
+      backgroundColor: theme.scaffoldBackgroundColor,
+      appBar: _buildAppBar(context, currentCategoryId),
       body: _isSearching
           ? _buildSearchResults()
-          : _isSwipeable
-              ? _buildPageView()
-              : _buildPageForCategory(widget.categoryId),
+          : (_isSwipeable ? _buildPageView() : _buildPageForCategory(widget.categoryId)),
     );
   }
 
@@ -168,40 +132,23 @@ class _ListScreenState extends State<ListScreen> {
     return _buildHymnList(categoryId);
   }
 
-  AppBar _buildAppBar(
-    BuildContext context,
-    Color accentColor,
-    Color color1,
-    Color color2,
-    int categoryIdForTitle,
-  ) {
+  AppBar _buildAppBar(BuildContext context, int categoryIdForTitle) {
+    final theme = Theme.of(context);
     return AppBar(
+      // AppBar colors and styles are now inherited from the main theme
       title: _isSearching
           ? TextField(
               controller: _searchController,
               autofocus: true,
               decoration: InputDecoration(
                 hintText: 'Search hymns...',
-                hintStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
+                hintStyle: TextStyle(color: theme.appBarTheme.foregroundColor?.withOpacity(0.7)),
                 border: InputBorder.none,
               ),
-              style: const TextStyle(color: Colors.white, fontSize: 18),
+              style: TextStyle(color: theme.appBarTheme.foregroundColor, fontSize: 18),
               onChanged: _onSearchChanged,
             )
-          : Text(
-              getCategoryTitle(categoryIdForTitle),
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-      flexibleSpace: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [color1, color2],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-      ),
-      foregroundColor: Colors.white,
+          : Text(getCategoryTitle(categoryIdForTitle)),
       actions: [
         IconButton(
           icon: Icon(_isSearching ? Icons.close_rounded : Icons.search_rounded),
@@ -223,24 +170,13 @@ class _ListScreenState extends State<ListScreen> {
   }
 
   Widget _buildAnimatedListItem({
-    required BuildContext context,
-    required int index,
-    required int itemId,
-    required String title,
-    String? subtitle,
-    required VoidCallback onTap,
+    required BuildContext context, required int index, required int itemId,
+    required String title, String? subtitle, required VoidCallback onTap,
   }) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
     final screenSize = MediaQuery.of(context).size;
     final double titleFontSize = (screenSize.width * 0.045).clamp(16, 20);
     final double subtitleFontSize = (screenSize.width * 0.035).clamp(12, 16);
-    final cardColor = isDarkMode ? const Color(0xFF1E1E1E) : Colors.white;
-    final accentColor =
-        isDarkMode ? const Color(0xFFF3BD46) : const Color(0xFF6A1B9A);
-    final primaryTextColor =
-        isDarkMode ? Colors.white.withOpacity(0.9) : Colors.black87;
-    final secondaryTextColor =
-        isDarkMode ? Colors.white.withOpacity(0.6) : Colors.black54;
 
     return AnimationConfiguration.staggeredList(
       position: index,
@@ -254,75 +190,54 @@ class _ListScreenState extends State<ListScreen> {
               vertical: screenSize.width * 0.02,
             ),
             decoration: BoxDecoration(
-              color: cardColor,
+              color: theme.cardColor,
               borderRadius: BorderRadius.circular(15.0),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
-                ),
-              ],
+              boxShadow: theme.brightness == Brightness.dark
+                  ? null
+                  : [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 8, offset: const Offset(0, 4))],
             ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(15.0),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: onTap,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Row(
-                      children: [
-                        CircleAvatar(
-                          backgroundColor: accentColor.withOpacity(0.15),
-                          child: Text(
-                            '$itemId',
-                            style: TextStyle(
-                              color: accentColor,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(15.0),
+                onTap: onTap,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        backgroundColor: theme.colorScheme.secondary.withOpacity(0.15),
+                        child: Text(
+                          '$itemId',
+                          style: TextStyle(color: theme.colorScheme.secondary, fontWeight: FontWeight.bold),
                         ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                title,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: titleFontSize,
-                                  color: primaryTextColor,
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              title, maxLines: 2, overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: titleFontSize,
+                                color: theme.textTheme.bodyLarge?.color,
+                              ),
+                            ),
+                            if (subtitle != null && subtitle.isNotEmpty)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 4.0),
+                                child: Text(
+                                  subtitle, maxLines: 1, overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(fontSize: subtitleFontSize, color: theme.textTheme.bodyMedium?.color),
                                 ),
                               ),
-                              if (subtitle != null && subtitle.isNotEmpty)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 4.0),
-                                  child: Text(
-                                    subtitle,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      fontSize: subtitleFontSize,
-                                      color: secondaryTextColor,
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
+                          ],
                         ),
-                        const SizedBox(width: 8),
-                        Icon(
-                          Icons.arrow_forward_ios_rounded,
-                          size: 16,
-                          color: secondaryTextColor.withOpacity(0.5),
-                        ),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(width: 8),
+                      Icon(Icons.arrow_forward_ios_rounded, size: 16, color: Colors.grey.withOpacity(0.5)),
+                    ],
                   ),
                 ),
               ),
@@ -333,10 +248,7 @@ class _ListScreenState extends State<ListScreen> {
     );
   }
 
-  Widget _buildList({
-    required int itemCount,
-    required Widget Function(BuildContext, int) itemBuilder,
-  }) {
+  Widget _buildList({required int itemCount, required Widget Function(BuildContext, int) itemBuilder}) {
     return AnimationLimiter(
       child: ListView.builder(
         padding: const EdgeInsets.only(top: 8, bottom: 80),
@@ -348,44 +260,23 @@ class _ListScreenState extends State<ListScreen> {
 
   Widget _buildHymnList(int categoryId) {
     final hymns = hymnsDatabase[categoryId] ?? {};
-
-    if (hymns.isEmpty) {
-      return const Center(child: Text("No hymns available in this category."));
-    }
-
+    if (hymns.isEmpty) return const Center(child: Text("No hymns available in this category."));
     return _buildList(
       itemCount: hymns.length,
       itemBuilder: (context, index) {
         final itemId = hymns.keys.elementAt(index);
         final content = hymns[itemId]!;
-        final title = content.split('\n').firstWhere(
-              (line) => line.trim().isNotEmpty,
-              orElse: () => 'Hymn $itemId',
-            );
-        final subtitle = content.split('\n').length > 1 &&
-                content.split('\n')[1].trim().isNotEmpty
+        final title = content.split('\n').firstWhere((line) => line.trim().isNotEmpty, orElse: () => 'Hymn $itemId');
+        final subtitle = content.split('\n').length > 1 && content.split('\n')[1].trim().isNotEmpty
             ? content.split('\n')[1]
             : 'Tap to read more...';
-
         return _buildAnimatedListItem(
-          context: context,
-          index: index,
-          itemId: itemId,
-          title: title,
-          subtitle: subtitle,
+          context: context, index: index, itemId: itemId, title: title, subtitle: subtitle,
           onTap: () {
-            widget.navigatorKey.currentState?.push(
-              MaterialPageRoute(
-                builder: (context) => DetailPage(
-                  title: title,
-                  id: categoryId,
-                  itemId: itemId,
-                  onToggleTheme: widget.onToggleTheme,
-                  setLastActivity: widget.setLastActivity,
-                  navigatorKey: widget.navigatorKey,
-                ),
-              ),
-            );
+            widget.navigatorKey.currentState?.push(MaterialPageRoute(builder: (context) => DetailPage(
+              title: title, id: categoryId, itemId: itemId,
+              onToggleTheme: widget.onToggleTheme, setLastActivity: widget.setLastActivity, navigatorKey: widget.navigatorKey,
+            )));
             widget.setLastActivity(categoryId, itemId: itemId);
           },
         );
@@ -403,16 +294,12 @@ class _ListScreenState extends State<ListScreen> {
             children: [
               Icon(Icons.search_off_rounded, size: 80, color: Colors.grey[400]),
               const SizedBox(height: 16),
-              const Text(
-                'Search for a hymn by title or content.',
-                textAlign: TextAlign.center,
-              ),
+              const Text('Search for a hymn by title or content.', textAlign: TextAlign.center),
             ],
           ),
         ),
       );
     }
-
     if (_searchResults.isEmpty) {
       return Center(
         child: Opacity(
@@ -420,22 +307,14 @@ class _ListScreenState extends State<ListScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.sentiment_dissatisfied_rounded,
-                size: 80,
-                color: Colors.grey[400],
-              ),
+              Icon(Icons.sentiment_dissatisfied_rounded, size: 80, color: Colors.grey[400]),
               const SizedBox(height: 16),
-              Text(
-                'No hymns found for "${_searchController.text}"',
-                textAlign: TextAlign.center,
-              ),
+              Text('No hymns found for "${_searchController.text}"', textAlign: TextAlign.center),
             ],
           ),
         ),
       );
     }
-
     return _buildList(
       itemCount: _searchResults.length,
       itemBuilder: (context, index) {
@@ -443,26 +322,14 @@ class _ListScreenState extends State<ListScreen> {
         final categoryId = result['categoryId'] as int;
         final itemId = result['itemId'] as int;
         final title = result['title'] as String;
-
         return _buildAnimatedListItem(
-          context: context,
-          index: index,
-          itemId: itemId,
-          title: title,
+          context: context, index: index, itemId: itemId, title: title,
           subtitle: 'Category: ${getCategoryTitle(categoryId)}',
           onTap: () {
-            widget.navigatorKey.currentState?.push(
-              MaterialPageRoute(
-                builder: (context) => DetailPage(
-                  title: title,
-                  id: categoryId,
-                  itemId: itemId,
-                  onToggleTheme: widget.onToggleTheme,
-                  setLastActivity: widget.setLastActivity,
-                  navigatorKey: widget.navigatorKey,
-                ),
-              ),
-            );
+            widget.navigatorKey.currentState?.push(MaterialPageRoute(builder: (context) => DetailPage(
+              title: title, id: categoryId, itemId: itemId,
+              onToggleTheme: widget.onToggleTheme, setLastActivity: widget.setLastActivity, navigatorKey: widget.navigatorKey,
+            )));
             widget.setLastActivity(categoryId, itemId: itemId);
           },
         );
@@ -476,22 +343,14 @@ class _ListScreenState extends State<ListScreen> {
       itemBuilder: (context, index) {
         final subCategoryId = subCategoryIds[index];
         return _buildAnimatedListItem(
-          context: context,
-          index: index,
-          itemId: subCategoryId,
+          context: context, index: index, itemId: subCategoryId,
           title: getCategoryTitle(subCategoryId),
           subtitle: 'Tap to view hymns',
           onTap: () {
-            widget.navigatorKey.currentState?.push(
-              MaterialPageRoute(
-                builder: (context) => ListScreen(
-                  subCategoryId,
-                  onToggleTheme: widget.onToggleTheme,
-                  setLastActivity: widget.setLastActivity,
-                  navigatorKey: widget.navigatorKey,
-                ),
-              ),
-            );
+            widget.navigatorKey.currentState?.push(MaterialPageRoute(builder: (context) => ListScreen(
+              subCategoryId, onToggleTheme: widget.onToggleTheme,
+              setLastActivity: widget.setLastActivity, navigatorKey: widget.navigatorKey,
+            )));
           },
         );
       },
