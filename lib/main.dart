@@ -3,7 +3,7 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:amidehayimanot_zimare/add.dart';
-import 'search.dart';
+import 'package:amidehayimanot_zimare/search.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -19,8 +19,8 @@ import 'package:amidehayimanot_zimare/aboutus.dart';
 // --- DEFINED BRANDING COLORS ---
 const Color kBrandedPrimary = Color(0xFF013b6d);
 const Color kBrandedAccent = Color(0xFFf5b916);
-const Color kBrandedCardLight = Color(0xFF024b8f); 
-const Color kBrandedBackgroundLight = Color(0xFFE1E8ED);
+const Color kBrandedCardLight = Color(0xFF024b8f); // Your original card color
+const Color kSilverSearchBackground = Color(0x33C0C0C0); // New Silver color ONLY for search bar
 
 const Color kDarkPrimary = Color(0xFF121212);
 const Color kDarkAccent = Color(0xFFF3BD46);
@@ -209,15 +209,15 @@ class MyAppState extends State<MyApp> {
       theme: ThemeData(
         brightness: Brightness.light,
         primaryColor: kBrandedPrimary,
-        scaffoldBackgroundColor: kBrandedPrimary, // Main background is blue
+        scaffoldBackgroundColor: kBrandedPrimary,
         fontFamily: 'NotoSansEthiopic',
         colorScheme: const ColorScheme.light(
           primary: kBrandedPrimary,
           secondary: kBrandedAccent,
           background: kBrandedPrimary,
-          onBackground: Colors.white,         // Text on blue background is WHITE
-          surface: kBrandedCardLight,         // Card color is light blue
-          onSurface: Colors.white,        // Text on cards is BLACK
+          onBackground: Colors.white,
+          surface: kBrandedCardLight,
+          onSurface: Colors.white,
         ),
         appBarTheme: const AppBarTheme(
           backgroundColor: Color(0xFF024b8f),
@@ -231,7 +231,7 @@ class MyAppState extends State<MyApp> {
           unselectedItemColor: Colors.white70,
         ),
         cardColor: kBrandedCardLight,
-        textTheme: Typography.material2021().white.apply(fontFamily: 'NotoSansEthiopic'), // Default text on cards
+        textTheme: Typography.material2021().white.apply(fontFamily: 'NotoSansEthiopic'),
       ),
       darkTheme: ThemeData(
         brightness: Brightness.dark,
@@ -323,11 +323,14 @@ class MyAppState extends State<MyApp> {
   }
 
   Widget _buildSearchField(ThemeData theme) {
+    final isBrandedTheme = theme.brightness == Brightness.light;
+    final searchFieldColor = isBrandedTheme ? kSilverSearchBackground : theme.scaffoldBackgroundColor.withOpacity(0.5);
+
     return Container(
       key: const ValueKey('searchField'),
       height: 40,
       decoration: BoxDecoration(
-        color: theme.colorScheme.primary.withOpacity(0.1),
+        color: searchFieldColor,
         borderRadius: BorderRadius.circular(20),
       ),
       child: TextField(
@@ -454,6 +457,7 @@ class MyAppState extends State<MyApp> {
     );
   }
 }
+
 class AnimatedSplashScreen extends StatefulWidget {
   const AnimatedSplashScreen({super.key});
   @override
